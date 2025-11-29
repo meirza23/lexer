@@ -1,35 +1,55 @@
+/* clexer.l */
 %{
 #include <stdio.h>
+#include <string.h>
+#include "ast.h"
+#include "parser.tab.h"
 %}
 
 %%
 
-"int"|"char"|"float"|"double"|"if"|"else"|"while"|"for"|"return"|"void"|"break"|"continue"|"struct"|"typedef"|"include"|"define"    { printf("TOKEN: KEYWORD (%s)\n", yytext); }
+^"#".* { /* Preprocessor (include vs) yutuluyor, islem yapma */ }
 
-[0-9]+(\.[0-9]+)?     { printf("TOKEN: NUMBER (%s)\n", yytext); }
+"int"       { return TOKEN_INT; }
+"float"     { return TOKEN_FLOAT; }
+"if"        { return TOKEN_IF; }
+"else"      { return TOKEN_ELSE; }
+"while"     { return TOKEN_WHILE; }
+"return"    { return TOKEN_RETURN; } /* Return eklendi */
 
-[a-zA-Z_][a-zA-Z0-9_]*    { printf("TOKEN: IDENTIFIER (%s)\n", yytext); }
+[0-9]+(\.[0-9]+)? { 
+    yylval.sval = strdup(yytext); 
+    return TOKEN_NUMBER; 
+}
 
-"//".*              { printf("TOKEN: COMMENT (//...)\n"); }
-"/*"([^*]|\*+[^*/])*"\*/"   { printf("TOKEN: COMMENT (/*...*/)\n"); }
+\"([^\\\"]|\\.)*\" { 
+    yylval.sval = strdup(yytext); 
+    return TOKEN_STRING; /* String literal eklendi */
+}
 
-"=="|"!="|"<="|">="|"="|"<"|">"|"."  { printf("TOKEN: OPERATOR (%s)\n", yytext); }
-"++"|"--"|"+"|"-"|"*"|"/"|"%"    { printf("TOKEN: OPERATOR (%s)\n", yytext); }
+[a-zA-Z_][a-zA-Z0-9_]* { 
+    yylval.sval = strdup(yytext); 
+    return TOKEN_ID; 
+}
 
-";"|"{"|"}"|"("|"["|"]"|","|"#"|")"|"<"|">"    { printf("TOKEN: SYMBOL (%s)\n", yytext); }
+"//".* { } /* Yorum satiri yut */
+[ \t\n]+    { } /* Bosluk yut */
 
-\"([^\\\"]|\\.)*\"      { printf("TOKEN: STRING (%s)\n", yytext); }
+"="         { return TOKEN_EQ; }
+"=="|"!="|"<"|">"|"+"|"-"|"*"|"/" { 
+    yylval.sval = strdup(yytext);
+    return TOKEN_OP; 
+}
 
-[ \t\n]+    ;
-.           { printf("TOKEN: UNKNOWN (%s)\n", yytext); }
+";" { return TOKEN_SEMI; }
+"{" { return TOKEN_LBRACE; }
+"}" { return TOKEN_RBRACE; }
+"(" { return '('; }
+")" { return ')'; }
+"," { return ','; }
+
+.   { printf("Bilinmeyen karakter: %s\n", yytext); }
 
 %%
 
-int main(void) {
-    yylex();
-    return 0;
-}
-
-int yywrap(void) {
-    return 1;
-}
+int yywrap(void) { return 1; }
