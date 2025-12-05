@@ -1,101 +1,65 @@
-C-Mini Compiler (Lexer & Parser)
+C-Mini Compiler (Final Version)
 
-Bu proje, C programlama dilinin bir alt kümesi için geliştirilmiş Lexer (Sözcük Analizcisi) ve Parser (Sözdizim Analizcisi) uygulamasıdır. Proje iki aşamadan oluşmaktadır:
-
-    Lexer: Kaynak kodunu okuyarak token'larına ayırır.
-
-    Parser: Tokenları alarak gramer kontrolü yapar ve Soyut Sözdizimi Ağacı (AST) oluşturur.
+Bu proje, Compiler Design dersi kapsamında geliştirilmiş; Lexer, Parser, Semantik Analiz ve Kod Üretimi aşamalarının tamamını içeren uçtan uca bir derleyicidir. C dilinin bir alt kümesini (Mini-C) girdi olarak alır ve LLVM IR kodu üretir.
 
 📋 Özellikler
 
-    Lexer (Flex): Anahtar kelimeleri (int, if, while vb.), operatörleri, sayıları ve tanımlayıcıları tanır.
+Lexical Analysis (Flex): Anahtar kelimeler (int, float, bool, if, else), operatörler ve tanımlayıcılar tanınır.
 
-    Parser (Bison): Gramer kurallarına göre sözdizimi denetimi yapar.
+Syntax Analysis (Bison): Gramer kuralları kontrol edilir ve Soyut Sözdizimi Ağacı (AST) oluşturulur.
 
-    AST: Kodun hiyerarşik yapısını (Değişken tanımları, Fonksiyon blokları, If-Else yapıları) görselleştirir.
+Semantic Analysis:
+
+Değişkenlerin Sembol Tablosu (Symbol Table) üzerinde takibi.
+
+Tanımlanmamış değişken (Undeclared variable) hatası yakalama.
+
+Değişken tekrarı (Redeclaration) hatası yakalama.
+
+Tip uyuşmazlığı (Type Mismatch) kontrolü (Örn: int'e string atama).
+
+Code Generation (LLVM IR):
+
+Tüm değişkenler stack üzerinde (alloca) saklanır.
+
+Matematiksel işlemler (+, -, *, /) desteklenir.
+
+Karmaşık If-Else yapıları br (branch) ve label (etiket) kullanılarak derlenir.
 
 🛠 Gereksinimler
 
-Projeyi derlemek ve çalıştırmak için sisteminizde aşağıdaki araçların kurulu olması gerekir:
+GCC
 
-    GCC (GNU Compiler Collection)
+Flex
 
-    Flex
-
-    Bison
+Bison
 
 🚀 Kurulum ve Çalıştırma
 
-Projeyi derlemek ve test.c dosyasını analiz etmek için terminalde aşağıdaki komutları sırasıyla çalıştırın:
-Bash
+Terminalde aşağıdaki komutları sırasıyla çalıştırarak derleyiciyi oluşturabilir ve test dosyalarını deneyebilirsiniz:
 
-# Parser ve Lexer kodlarını oluştur
-bison -d parser.y
+# 1. Lexer ve Parser kodlarını oluştur
 flex clexer.l
+bison -d parser.y
 
-# Derleyiciyi oluştur (Compile)
-gcc parser.tab.c lex.yy.c -o mycompiler
+# 2. Derleyiciyi oluştur (codegen.c modülü dahil)
+gcc lex.yy.c parser.tab.c codegen.c -o mycompiler
 
-# Test dosyasını çalıştır
-./mycompiler test.c
+# 3. Örnek bir kodu derle (Code Generation Testi)
+./mycompiler test_integration.ml > output.ll
 
-📊 Proje Çıktıları
+# 4. Çıktıyı gör
+cat output.ll
 
-🔹 Aşama 1: Lexer (Token Ayrıştırma)
-
-Lexer aşamasında kaynak kod anlamsız karakter dizilerinden, anlamlı Token parçalarına dönüştürülür. (Not: Bu çıktı Proje 1 aşamasındaki standalone lexer modundan alınmıştır.)
-
-Girdi: int x = 10;
-
-Çıktı:
-Plaintext
-
-TOKEN: KEYWORD (int)
-TOKEN: IDENTIFIER (x)
-TOKEN: OPERATOR (=)
-TOKEN: NUMBER (10)
-TOKEN: SYMBOL (;)
-
-🔹 Aşama 2: Parser & AST (Sözdizimi Ağacı)
-
-Parser aşamasında tokenlar birleştirilerek kodun yapısal ağacı (AST) oluşturulur. test.c dosyası için üretilen ağaç yapısı aşağıdadır:
-
-Test Kodu (test.c):
-C
-
-int main() {
-    int x = 10;
-    float y = 2.5;
-    if (x > y) {
-        printf("X daha büyük\n");
-    }
-    return 0;
-}
-
-AST Çıktısı:
-Plaintext
-
-Function Def: main
-  VarDecl: int
-    ID: x
-    Const: 10
-  VarDecl: float
-    ID: y
-    Const: 2.5
-  If Statement
-    Op: >
-      ID: x
-      ID: y
-    Function Call: printf
-      String: "X daha büyük\n"
-  Op: return
 
 📂 Dosya Yapısı
 
-    clexer.l: Flex için lexer kuralları (Token tanımları).
+clexer.l: Token tanımları ve Lexer kuralları.
 
-    parser.y: Bison için gramer kuralları ve AST oluşturma mantığı.
+parser.y: Gramer kuralları, AST oluşturma mantığı.
 
-    ast.h: AST düğüm yapıları (struct) ve yardımcı fonksiyonlar.
+ast.h: Gelişmiş AST düğüm yapıları (elseNode, NODE_MATH vb.).
 
-    test.c: Test için kullanılan örnek C kodu.
+codegen.c: [Proje 3] Semantik analiz ve LLVM IR kod üretim modülü.
+
+test_*.ml: Proje kapsamında kullanılan test senaryoları.
