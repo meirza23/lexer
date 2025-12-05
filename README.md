@@ -1,65 +1,127 @@
-C-Mini Compiler (Final Version)
+# **C-Mini Compiler – Final Version**
 
-Bu proje, Compiler Design dersi kapsamında geliştirilmiş; Lexer, Parser, Semantik Analiz ve Kod Üretimi aşamalarının tamamını içeren uçtan uca bir derleyicidir. C dilinin bir alt kümesini (Mini-C) girdi olarak alır ve LLVM IR kodu üretir.
+Bu proje, *Compiler Design* dersi kapsamında geliştirilmiş uçtan uca bir derleyicidir. Mini-C olarak adlandırılan C dilinin bir alt kümesini girdi olarak alır; Lexical Analysis, Syntax Analysis, Semantik Analiz ve Code Generation aşamalarından geçirerek LLVM IR çıktısı üretir.
 
-📋 Özellikler
+---
 
-Lexical Analysis (Flex): Anahtar kelimeler (int, float, bool, if, else), operatörler ve tanımlayıcılar tanınır.
+## 📌 **Özellikler**
 
-Syntax Analysis (Bison): Gramer kuralları kontrol edilir ve Soyut Sözdizimi Ağacı (AST) oluşturulur.
+### **1. Lexical Analysis (Flex)**
+- `int`, `float`, `bool`, `if`, `else` gibi anahtar kelimeleri tanır.
+- Operatörleri, literal değerleri ve tanımlayıcıları ayıklar.
 
-Semantic Analysis:
+### **2. Syntax Analysis (Bison)**
+- Gramer kurallarına göre Mini-C kodunu parse eder.
+- Soyut Sözdizimi Ağacı (AST) oluşturur.
 
-Değişkenlerin Sembol Tablosu (Symbol Table) üzerinde takibi.
+### **3. Semantic Analysis**
+- Değişkenlerin sembol tablosunda yönetimi.
+- Tanımlanmamış değişken kullanımı tespiti.
+- Değişken tekrar tanımlama (redeclaration) hatası kontrolü.
+- Tip uyuşmazlığı (type mismatch) tespiti.
 
-Tanımlanmamış değişken (Undeclared variable) hatası yakalama.
+### **4. Code Generation (LLVM IR)**
+- Tüm değişkenler `alloca` ile stack üzerinde tutulur.
+- Aritmetik işlemler (`+`, `-`, `*`, `/`) desteklenir.
+- If-Else yapıları `br` (branch) ve `label` kullanılarak derlenir.
 
-Değişken tekrarı (Redeclaration) hatası yakalama.
+---
 
-Tip uyuşmazlığı (Type Mismatch) kontrolü (Örn: int'e string atama).
+## 🛠 **Gereksinimler**
 
-Code Generation (LLVM IR):
+- GCC  
+- Flex  
+- Bison  
+- (İsteğe bağlı) LLVM → Üretilen IR'ı çalıştırmak için
 
-Tüm değişkenler stack üzerinde (alloca) saklanır.
+---
 
-Matematiksel işlemler (+, -, *, /) desteklenir.
+## 🚀 **Kurulum ve Çalıştırma**
 
-Karmaşık If-Else yapıları br (branch) ve label (etiket) kullanılarak derlenir.
-
-🛠 Gereksinimler
-
-GCC
-
-Flex
-
-Bison
-
-🚀 Kurulum ve Çalıştırma
-
-Terminalde aşağıdaki komutları sırasıyla çalıştırarak derleyiciyi oluşturabilir ve test dosyalarını deneyebilirsiniz:
-
-# 1. Lexer ve Parser kodlarını oluştur
+### **1. Lexer ve Parser kodlarını üretin**
+```bash
 flex clexer.l
 bison -d parser.y
+```
 
-# 2. Derleyiciyi oluştur (codegen.c modülü dahil)
+### **2. Derleyiciyi derleyin**
+```bash
 gcc lex.yy.c parser.tab.c codegen.c -o mycompiler
+```
 
-# 3. Örnek bir kodu derle (Code Generation Testi)
+### **3. Örnek bir Mini-C kodunu derleyin**
+```bash
 ./mycompiler test_integration.ml > output.ll
+```
 
-# 4. Çıktıyı gör
+### **4. LLVM IR çıktısını görüntüleyin**
+```bash
 cat output.ll
+```
 
+---
 
-📂 Dosya Yapısı
+## 📂 **Dosya Yapısı**
 
-clexer.l: Token tanımları ve Lexer kuralları.
+```
+clexer.l               → Lexer kuralları  
+parser.y               → Bison grameri + AST üretimi  
+ast.h                  → AST düğüm yapıları  
+codegen.c              → Semantik analiz + LLVM IR üretimi  
+test_*.ml              → Test senaryoları  
+```
 
-parser.y: Gramer kuralları, AST oluşturma mantığı.
+---
 
-ast.h: Gelişmiş AST düğüm yapıları (elseNode, NODE_MATH vb.).
+## 🧪 **Test Dosyalarının Çalıştırılması**
 
-codegen.c: [Proje 3] Semantik analiz ve LLVM IR kod üretim modülü.
+### **1. Code Generation Testi – test_codegen.ml**
+```bash
+./mycompiler test_codegen.ml > codegen.ll
+cat codegen.ll
+```
 
-test_*.ml: Proje kapsamında kullanılan test senaryoları.
+### **2. Entegrasyon Testi – test_integration.ml**
+```bash
+./mycompiler test_integration.ml > integration.ll
+cat integration.ll
+```
+
+---
+
+## ❗ **Semantik Hata Testleri**
+
+### **test_semantic_err1.ml**  
+*Tanımlanmamış değişken testi*
+```bash
+./mycompiler test_semantic_err1.ml
+```
+
+### **test_semantic_err2.ml**  
+*Değişken tekrar tanımlama testi*
+```bash
+./mycompiler test_semantic_err2.ml
+```
+
+### **test_semantic_err3.ml**  
+*Tip uyuşmazlığı testi*
+```bash
+./mycompiler test_semantic_err3.ml
+```
+
+---
+
+## ✔ **Geçerli Kod Testi**
+
+### **test_semantic_valid.ml**
+```bash
+./mycompiler test_semantic_valid.ml > semantic_valid.ll
+cat semantic_valid.ll
+```
+
+---
+
+## 🎯 **Sonuç**
+
+Bu proje, Mini-C dilini uçtan uca işleyip LLVM IR çıktısı üretebilen tam bir derleyici prototipidir.  
+Eğitim amaçlıdır ve gerçek bir derleyicinin çalışma adımlarını öğrenmek için uygundur.
